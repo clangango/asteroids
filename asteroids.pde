@@ -4,25 +4,36 @@
  *
  * Group 20
  *
+ * @author Peter Stacey, Tim Pereira, T McCormack
+ * @version 0.1
 **/
 
 import processing.sound.*;
 
+// variables to store keyboard input state
 boolean rightKey;
 boolean leftKey;
 boolean upKey;
 boolean fire;
-int level;
-int score;
-int[] asteroidScores;
+int weapon;
+
+int level = 1;                         // Current game level
+int score = 0;                         // Current game score
+int[] asteroidScores = {20, 50, 100};  // array to store score values for asteroids and UFOs
 
 Player player;
-ArrayList<Bullet> bullets;
-ArrayList<Asteroid> asteroids;
-int flightTime;
 
+ArrayList<Bullet> bullets;             // Arraylist to track bullets fired by the player
+ArrayList<Asteroid> asteroids;         // Arraylist to track current asteroids
+ArrayList<UFO> ufos;
+
+
+// Sounds
 SoundFile thrustSound;
 SoundFile fireSound;
+SoundFile ufoSound;
+
+// Font
 PFont font;
 
 void setup() {
@@ -30,39 +41,44 @@ void setup() {
   player = new Player();
   bullets = new ArrayList<Bullet>();
   asteroids = new ArrayList<Asteroid>();
-  flightTime = 800;
+  ufos = new ArrayList<UFO>();
   thrustSound = new SoundFile(this, "thrust.wav");
   fireSound = new SoundFile(this, "fire.wav");
+  ufoSound = new SoundFile(this, "ufo_lowpitch.wav");
+  thrustSound.rate(0.75);
+  ufoSound.rate(0.25);
+  fireSound.rate(0.25);
   font = createFont("Hyperspace.otf", 32);
-  level = 1;
-  score = 0;
-  asteroidScores = new int[]{20, 50, 100};
-  startLevel(1);
+  startLevel(level);
 }
 
 void draw() {
   background(0);
-  player.update();
-  player.draw();
-  for(Asteroid asteroid: asteroids) { asteroid.update(); asteroid.draw();}
   
+  //update and draw player and asteroids
+  player.draw();
+  player.update();
+  
+  for(Asteroid asteroid: asteroids) { asteroid.draw(); asteroid.update();}
+  
+  // update bullets and check for collision with asteroids
   for(int i = bullets.size(); i > 0; i--) {
     Bullet bullet = (Bullet)bullets.get(i-1);
-    if(millis() - bullet.getTime() > flightTime) {
+    if(millis() - bullet.getTime() > bullet.getFlightTime()) {
       bullets.remove(i-1);
     }
-    bullet.update();
     bullet.draw();
+    bullet.update();
     for(int j = asteroids.size(); j > 0; j--) {
       Asteroid asteroid = (Asteroid)asteroids.get(j-1);
-      if(bullet.getPosition().dist(asteroid.getPosition()) < 40) {
+      if(asteroid.checkCollision(bullet)) {
         bullets.remove(bullet);
         int newSize = asteroid.getSize() - 1;
         score += asteroidScores[newSize];
         println(score);
         if(newSize > 0) {
-          asteroids.add(new Asteroid(new PVector(asteroid.getPosition().x, asteroid.getPosition().y), newSize));
-          asteroids.add(new Asteroid(new PVector(asteroid.getPosition().x, asteroid.getPosition().y), newSize));
+          asteroids.add(new Asteroid(asteroid.getPosition().x, asteroid.getPosition().y, newSize));
+          asteroids.add(new Asteroid(asteroid.getPosition().x, asteroid.getPosition().y, newSize));
         }
         asteroids.remove(asteroid);
       }
@@ -71,7 +87,7 @@ void draw() {
   
   for(int i = asteroids.size(); i > 0; i--) {
     Asteroid asteroid = (Asteroid)asteroids.get(i-1);
-    if(asteroid.getPosition().dist(player.getPosition()) < 20) {
+    if(asteroid.checkCollision(player)) {
       player.loseLife();
       asteroids.remove(asteroid);
     }
@@ -81,10 +97,57 @@ void draw() {
       noLoop();
     }
   }
+  
+  float addUfo = random(1);
+  
+  if(ufos.size() < 1 && addUfo <= UFO.UFO_CHANCE) {
+    float startX = 1;
+    float startY = random(100, height - 100);
+    float horizontal = random(1);    
+    if(horizontal >= 0.5) startX = width - 1;
+    println(startX + ", " + startY);
+    ufos.add(new UFO(startX, startY));  
+  }
+  
+  for(int i = ufos.size(); i > 0; i--) {
+    UFO ufo = (UFO)ufos.get(i-1);
+    if(ufo.getPosition().x <= 0 || ufo.getPosition().x >= width ||
+       ufo.getPosition().y <= 0 || ufo.getPosition().y >= height) {
+      ufos.remove(i-1);
+      ufoSound.stop();
+    } else {
+      ufo.update(); 
+      ufo.draw();
+      if(ufo.checkCollision(player)) {
+        player.loseLife();
+        ufos.remove(i-1);
+        ufoSound.stop();
+      }
+    }
+    for(int j = bullets.size(); j > 0; j--) {
+      Bullet bullet = (Bullet)bullets.get(j-1);
+      if(ufo.checkCollision(bullet)) {
+        score += 1000;
+        ufos.remove(ufo);
+        ufoSound.stop();
+        bullets.remove(bullet);
+      }
+    } 
+  }
+  
   textFont(font);
+  textAlign(LEFT);
   text(score, 30, 50);
+  stroke(255);
   for(int i = 0; i < player.getLives(); i++) {
-     triangle(30 + i * 30, 90, 40 + i * 30, 60, 50 + i * 30, 90);
+    pushMatrix();
+    strokeWeight(1);
+    translate(30 + i * 30, 90);
+    line(-10, 15, 0, -15);
+    line(0, -15, 10, 15);
+    line(10, 15, 0, 10);
+    line(0, 10, -10, 15); 
+    popMatrix();
   }
   
   if(asteroids.size() == 0) {
@@ -97,21 +160,14 @@ void draw() {
 }
 
 void keyPressed() {
-  keyboardPressed();
-}
-
-void keyReleased() {
-  keyboardReleased();
-}
-
-void keyboardPressed() {
   if(keyCode == UP) upKey = true;
   if(keyCode == LEFT) leftKey = true;
   if(keyCode == RIGHT) rightKey = true;
   if(key == ' ') fire = true;
+  if(key == '1') weapon = 1;
 }
 
-void keyboardReleased() {
+void keyReleased() {
   if(keyCode == UP) upKey = false;
   if(keyCode == LEFT) leftKey = false;
   if(keyCode == RIGHT) rightKey = false;
@@ -128,194 +184,7 @@ void startLevel(int level) {
     else { startX = random(width/2 + 200, width);}
     if(topBottom < 0.5) { startY = random(0, height/2 - 200);}
     else { startY = random(height/2 + 200, height);}
-    asteroids.add(new Asteroid(new PVector(startX, startY), 3));
-  }
-}
-
-class Player {
-  
-  int lives;
-  PVector position;
-  PVector velocity;
-  PVector acceleration;
-  float angle;
-  float thrust;
-  int lastFired;
-  
-  Player() {
-    lives = 3;
-    thrust = 0.2;
-    reset();
-  }
-  
-  void reset() {
-    position = new PVector(width/2, height/2);
-    velocity = new PVector(0, 0);
-    acceleration = new PVector(0, 0);
-    lastFired = 0;
-  }
-  
-  void update() {
-    if(leftKey) rotateLeft();
-    if(rightKey) rotateRight();
-    if(upKey) {
-      thrust();
-    } else {
-      noThrust();
-    }
-    if(fire) {
-      if(millis() - lastFired > 200) {
-        fire();
-        lastFired = millis();
-      }
-    }
-    position.add(velocity);
-    velocity.mult(0.992);
-    velocity.add(acceleration);
-    
-    if(position.x < 0) position.x = width;
-    if(position.x > width) position.x = 0;
-    if(position.y < 0) position.y = height;
-    if(position.y > height) position.y = 0;
-  }
-  
-  void draw() {
-    stroke(255);
-    noFill();
-    pushMatrix();
-    translate(position.x, position.y);
-    rotate(radians(angle));
-    triangle(-10, 10, 0, -20, 10, 10);
-    if(upKey) {
-      triangle(-2, 10, 0, 18, 2, 10);
-    }
-    popMatrix();
-  }
-  
-  void thrust() {
-    acceleration = new PVector(thrust * sin(radians(angle)), -thrust * cos(radians(angle)));
-    thrustSound.play();
-  }
-  
-  void noThrust() {
-    acceleration = new PVector(0, 0);
-  }
-  
-  void rotateLeft() {
-    angle -= 10;
-  }
-  
-  void rotateRight() {
-    angle += 10;
-  }
-  
-  void warp() {
-    position.x = random(0, width);
-    position.y = random(0, height);
-  }
-  
-  void fire() {
-    bullets.add(new Bullet(new PVector(position.x, position.y), angle));
-    fireSound.play();
-  }
-  
-  PVector getPosition() {
-    return position;
-  }
-  
-  int getLives() {
-    return lives;
-  }
-  
-  void loseLife() {
-    lives--;
-  }
-}
-
-class Bullet {
-  
-  PVector position;
-  PVector velocity;
-  float angle;
-  int time;
-  int flightTime;
-  
-  Bullet(PVector position, float angle) {
-    this.position = position;
-    this.angle = angle;
-    velocity = new PVector(0, 0);
-    time = millis();
-  }
-  
-  void update() {
-    if(millis() - time > flightTime) {
-      
-    }
-    velocity = new PVector(8 * sin(radians(angle)), -8 * cos(radians(angle)));
-    position.add(velocity);
-    
-    if(position.x < 0) position.x = width;
-    if(position.x > width) position.x = 0;
-    if(position.y < 0) position.y = height;
-    if(position.y > height) position.y = 0;
-  }
-  
-  void draw() {
-    stroke(255);
-    strokeWeight(2);
-    point(position.x, position.y);
-  }
-  
-  int getTime() {
-    return time;
-  }
-  
-  PVector getPosition() {
-    return position;
-  }
-}
-
-class Asteroid {
-  
-  PVector position;
-  PVector velocity;
-  float angle;
-  int radius;
-  int size;
-
-  Asteroid(PVector position, int size) {  
-    this.position = position;
-    velocity = new PVector(0, 0);
-    angle = random(0, 360);
-    this.size = size;
-    if(size == 3) this.radius = 50;
-    if(size == 2) this.radius = 25;
-    if(size == 1) this.radius = 12;
-  }
-  
-  void update() {
-    velocity = new PVector((1 + 2/size + level * 0.1) * sin(radians(angle)), -(1 + 2/size + level * 0.1) * cos(radians(angle)));
-    position.add(velocity);
-    
-    if(position.x < 0) position.x = width;
-    if(position.x > width) position.x = 0;
-    if(position.y < 0) position.y = height;
-    if(position.y > height) position.y = 0;
-  }
-  
-  void draw() {
-    noFill();
-    //strokeWeight(2);
-    stroke(255);
-    ellipse(position.x, position.y, radius, radius);
-  }
-  
-  PVector getPosition() {
-    return position;
-  }
-  
-  int getSize() {
-    return size;
+    asteroids.add(new Asteroid(startX, startY, 3));
   }
 }
 
