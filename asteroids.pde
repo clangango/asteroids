@@ -28,7 +28,7 @@ Level level;
 
 ArrayList<Bullet> bullets;             // Arraylist to track bullets fired by the player
 ArrayList<Asteroid> asteroids;         // Arraylist to track current asteroids
-ArrayList<UFO> ufos;
+UFO ufo;
 
 // Sounds
 SoundFile thrustSound;
@@ -45,7 +45,7 @@ void setup() {
   player = new Player();
   bullets = new ArrayList<Bullet>();
   asteroids = new ArrayList<Asteroid>();
-  ufos = new ArrayList<UFO>();
+  ufo = null;
   
   // prior to the game starting, the level does not exist. Set to 0
   level = new Level(0, player);                              
@@ -66,7 +66,7 @@ void draw() {
   background(0);
   
   // check if UFO appears
-  if(ufos.size() < MAX_UFO && random(1) <= UFO.UFO_CHANCE) { addUfo(); }
+  if(ufo == null && random(1) <= UFO.UFO_CHANCE) { addUfo(); }
   
   // update and draw player, asteroids, bullets and ufos
   tickGameElements();
@@ -130,7 +130,7 @@ void displayPlayerLives() {
 }
 
 void checkLevelOver() {
-  if(level.shouldLevel(asteroids, ufos)) {
+  if(level.shouldLevel(asteroids, ufo)) {
     level.setLevel(level.getLevel() + 1);
     level.start();
   }
@@ -159,7 +159,7 @@ void addUfo() {
   float startX = 1;  // default to start on the left side of the canvas
   float startY = random(150, height - 150);    
   if(random(1) >= 0.5) startX = width - 1;  // if should start on the right, set startX to the right side
-  ufos.add(new UFO(startX, startY));
+  ufo = new UFO(startX, startY);
 }
 
 void asteroidHit(Asteroid asteroid, Bullet bullet) {
@@ -175,7 +175,7 @@ void tickGameElements() {
   player.update();
   for(Asteroid asteroid: asteroids) { asteroid.draw(); asteroid.update(); }
   for(Bullet bullet: bullets) { bullet.draw(); bullet.update(); }
-  for(UFO ufo: ufos) {ufo.draw(); ufo.update(); }
+  if(ufo != null) {ufo.draw(); ufo.update(); }
 }
 
 void collisionBulletAsteroid() {
@@ -205,36 +205,34 @@ void collisionAsteroidPlayer() {
 }
 
 void collisionUfoPlayer() {
-  if(ufos.size() > 0) {
-    UFO ufo = (UFO)ufos.get(0);
+  if(ufo != null) {
     if(ufo.checkCollision(player)) {
       player.loseLife();
-      ufos.remove(ufo);
+      ufo = null;
       ufoSound.stop();
     }
   }
 }
 
 void collisionBulletUfo() {
-  if(ufos.size() > 0) {
-    UFO ufo = (UFO)ufos.get(0);
+  if(ufo != null) {
     for(int i = bullets.size(); i > 0; i--) {
       Bullet bullet = (Bullet)bullets.get(i-1);
       if(ufo.checkCollision(bullet)) {
         score += ufoScores[0];
-        ufos.remove(ufo);
+        ufo = null;
         ufoSound.stop();
         bullets.remove(bullet);
+        return;
       }
     }
   }
 }
 
 void checkUfo() {
-  if(ufos.size() > 0) {
-    UFO ufo = (UFO)ufos.get(0);
+  if(ufo != null) {
     if(ufo.isOffScreen()) {
-      ufos.remove(ufo);
+      ufo = null;
       ufoSound.stop();
     }
   }

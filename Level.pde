@@ -43,8 +43,8 @@ class Level {
     this.level = level;
   }
   
-  boolean shouldLevel(ArrayList<Asteroid> asteroids, ArrayList<UFO> ufos) {
-    if(asteroids.size() == 0 && ufos.size() == 0) return true;
+  boolean shouldLevel(ArrayList<Asteroid> asteroids, UFO ufo) {
+    if(asteroids.size() == 0 && ufo == null) return true;
     return false;
   }
 }
