@@ -10,14 +10,13 @@ class Player extends GameObject {
   
   int lives;
   int timeLastFired;
-  int currentWeapon;
   PShape pShape;
   
   Player() {
-    super(width/2, height/2);
+    super(width/2, height/2);     // start player in centre of the screen
     lives = STARTLIVES;
     timeLastFired = 0;
-    weapon = 1;
+    weapon = 1;                   // starting weapon is the bullet
     
     pShape = createShape();
     pShape.beginShape();
@@ -40,7 +39,7 @@ class Player extends GameObject {
     } else {
       acceleration.x = 0;
       acceleration.y = 0;
-      velocity.mult(DECELERATE);
+      velocity.mult(DECELERATE);  // if not applying thrust, slow down a little bit each loop
     }
     if(fire) {
       if(millis() - timeLastFired > FIREDELAY) {
@@ -48,7 +47,6 @@ class Player extends GameObject {
         timeLastFired = millis();
       }
     }
-    currentWeapon = weapon;
   }
   
   void draw() {
@@ -59,6 +57,7 @@ class Player extends GameObject {
     shape(pShape, 0, 0);;
     
     if(upKey) {
+      // add a small red flame out the back when applying thrust
       stroke(255,0,0);
       noFill();
       triangle(-2, 15, 0, 25, 2, 15);
@@ -80,6 +79,7 @@ class Player extends GameObject {
     angle += 10;
   }
   
+  // pick a random location on the screen and move the player
   void warp() {
     position.x = random(0, width);
     position.y = random(0, height);
@@ -87,16 +87,13 @@ class Player extends GameObject {
   
   void fire() {
     switch(weapon) {
-      case 1:  
-        float bulletX = position.x + 15  * sin(radians(angle));
-        float bulletY = position.y - 15 * cos(radians(angle));
-        bullets.add(new Bullet(bulletX, bulletY, angle));
+      // default weapon is the bullet
+      default:  
+        bullets.add(new Bullet(position.x + 15  * sin(radians(angle)), position.y - 15 * cos(radians(angle)), angle));
         fireSound.play();
         break;
     }
   }
-  
-  void switchWeapon() {}
   
   int getLives() {
     return lives;
@@ -110,13 +107,25 @@ class Player extends GameObject {
     lives++;
   }
   
+  // set the player ship values back to the starting position
+  // called at the start of each level to rest the player for the next level
   void reset() {
+    // return position to centre of the screen
     position.x = width/2;
     position.y = height/2;
+    
+    // set angle back to 0
+    angle = 0;
+    
+    // set velocity to 0
     velocity.x = 0;
     velocity.y = 0;
+    
+    // set acceleration to 0
     acceleration.x = 0;
     acceleration.y = 0;
+    
+    // set the record of time last fired back to 0
     timeLastFired = 0;
   }
 }

@@ -3,18 +3,23 @@ class Asteroid extends GameObject {
   int radius;
   int size;
   float scale;
+  
   PShape aShape;
 
   Asteroid(float x, float y, int size) {
     super(x, y);
     angle = random(360);
     this.size = size;
-    velocity.x = (1 + 1/size + level * 0.2) * sin(radians(angle));
-    velocity.y = (1 + 1/size + level * 0.2) * -cos(radians(angle));
-    if(size == 3) { radius = 50; scale=1; }
-    if(size == 2) { radius = 25; scale=0.5; }
-    if(size == 1) { radius = 12; scale = 0.25; }
+    velocity.x = (1 + 1/size + level.getLevel() * 0.2) * sin(radians(angle));
+    velocity.y = (1 + 1/size + level.getLevel() * 0.2) * -cos(radians(angle));
+    
+    // set the radius for collision detection **** FIX THIS ****
+    // set the scale for the size to draw     **** FIX THIS - ADD MORE SHAPES ****
+    if(size == 3) { radius = 40; scale = 1.0; }
+    if(size == 2) { radius = 20; scale = 0.5; }
+    if(size == 1) { radius = 15; scale = 0.25; }
 
+    // create the large asteroid shape
     aShape = createShape();
     aShape.beginShape();
     aShape.noFill();
