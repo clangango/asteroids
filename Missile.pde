@@ -62,7 +62,7 @@ class Missile extends GameObject {
   }
 
   // TODO check parameter input and closest target algorithm
-  void targetNearest(ArrayList<UFO> potentialTargetsUfos, ArrayList<Asteroid> potentialTargetsAsteroids, PVector playerPosition {
+  void targetNearest(ArrayList<UFO> potentialTargetsUfos, ArrayList<Asteroid> potentialTargetsAsteroids, PVector playerPosition){
     float nearestTarget;
       if (ufos.size() > 0) {
         for (int i = ufos.size(); i > 0; i--){
@@ -75,7 +75,7 @@ class Missile extends GameObject {
           }
       }else {
         for (int i = asteroids.size(); i > 0; i--){
-          nearestTarget = dist((asteroids.get(i-1)), player;
+          nearestTarget = dist((asteroids.get(i-1)), player);
           if (nearestTarget < dist((asteroids.get(i)), player)) {
             target = new PVector(asteroids.get(i-1).getPosition());
           }else {

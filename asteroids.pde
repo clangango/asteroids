@@ -69,9 +69,6 @@ void draw() {
   // clear the canvas each loop
   background(0);
 
-  // Initialise force for missiles
-  PVector force = new PVector(0.1, 0.1);
-
   // check if UFO appears
   if(ufos.size() < MAX_UFO && random(1) <= UFO.UFO_CHANCE) { addUfo(); }
 
@@ -182,7 +179,7 @@ void asteroidHitMissile(Asteroid asteroid, Missile missile) {
   // collision occured. Add score, split the asteroid and remove the missile and old asteroid
   addScore(asteroid.getSize());
   breakAsteroid(asteroid.getSize(), asteroid.getPosition());
-  missiles.remove(missile)
+  missiles.remove(missile);
   asteroids.remove(asteroid);
 }
 
@@ -192,10 +189,16 @@ void tickGameElements() {
   for(Asteroid asteroid: asteroids) { asteroid.draw(); asteroid.update(); }
   for(Bullet bullet: bullets) { bullet.draw(); bullet.update(); }
   for(UFO ufo: ufos) {ufo.draw(); ufo.update(); }
+  
+  // Initialise target and force for missiles
+  PVector force = new PVector(0.1, 0.1);
+  PVector target;
+
   if (weapon == 2) {
     for(Missile missile: missiles) {missile.update(); missile.applyForce(force);
       missile.nearestTarget(ufos, asteroids, player);
-      missileTarget = new PVector(getTarget);
+      target = missile.getTarget();
+      missileTarget = new PVector(target);
       missile.homing(missileTarget); missile.draw();}
     }
   }
