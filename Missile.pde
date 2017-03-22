@@ -8,6 +8,7 @@ class Missile extends GameObject {
   final int FLIGHTTIME = 1600;
   PVector target;
   int startTime;
+  boolean ufoExists;
 
 
   Missile(float shipPositionX, float shipPositionY) {
@@ -62,28 +63,23 @@ class Missile extends GameObject {
   }
 
   // TODO check parameter input and closest target algorithm
-  void targetNearest(ArrayList<UFO> potentialTargetsUfos, ArrayList<Asteroid> potentialTargetsAsteroids, PVector playerPosition){
-    float nearestTarget;
-      if (ufos.size() > 0) {
-        for (int i = ufos.size(); i > 0; i--){
-            nearestTarget = dist((ufos.get(i-1)), player);
-            if (nearestTarget < dist((ufos.get(i)), player)) {
-              target = new PVector(ufos.get(i-1).getPosition());
-            }else {
-              target =  new PVector(ufos.get(i).getPosition());
-            }
-          }
-      }else {
-        for (int i = asteroids.size(); i > 0; i--){
-          nearestTarget = dist((asteroids.get(i-1)), player);
-          if (nearestTarget < dist((asteroids.get(i)), player)) {
-            target = new PVector(asteroids.get(i-1).getPosition());
-          }else {
-            target =  new PVector(asteroids.get(i).getPosition());
-          }
+  void targetNearestUFO(UFO ufo){
+      if (UFO != null) {
+        return ufoExists = True;
+    }
+
+  void targetNearestAstroid(ArrayList<Asteroid> asteroids, PVector playerPosition) {
+      float nearestTarget;
+      for (int i = asteroids.size(); i > 0; i--) {
+        nearestTarget = PVector.dist(playerPosition, asteroids.get(i));
+        if (nearestTarget < PVector.dist(playerPosition, asteroids.get(i-1))) {
+          target = asteroids.get(i);
+        }else {
+          target = asteroids.get(i-1);
+        }
       }
     }
-  }
+
 
   PVector getTarget() {
     return target;
@@ -100,6 +96,10 @@ class Missile extends GameObject {
   boolean shouldEnd() {
     if(millis() - startTime >= FLIGHTTIME) return true;
     return false;
+  }
+
+  boolean getUfoExists() {
+    return ufoExists;
   }
 
 }

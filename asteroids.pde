@@ -189,19 +189,17 @@ void tickGameElements() {
   for(Asteroid asteroid: asteroids) { asteroid.draw(); asteroid.update(); }
   for(Bullet bullet: bullets) { bullet.draw(); bullet.update(); }
   for(UFO ufo: ufos) {ufo.draw(); ufo.update(); }
-  
+
   // Initialise target and force for missiles
   PVector force = new PVector(0.1, 0.1);
   PVector target;
-
-  if (weapon == 2) {
-    for(Missile missile: missiles) {missile.update(); missile.applyForce(force);
-      missile.nearestTarget(ufos, asteroids, player);
-      target = missile.getTarget();
-      missileTarget = new PVector(target);
-      missile.homing(missileTarget); missile.draw();}
-    }
+  for(Missile missile: missiles) {missile.update(); missile.draw();
+    missile.applyForce(force);
+    missile.targetNearestAsteroid(asteroids, player.getPosition());
+    target = missile.getTarget();
+    missile.homing(target); }
   }
+
 
 void collisionBulletAsteroid() {
   // bullet->asteroid collisions
@@ -263,7 +261,7 @@ void collisionMissileAsteroid() {
     for(int j = asteroids.size(); j > 0; j--) {
       Asteroid asteroid = (Asteroid)asteroids.get(j-1);
       if(asteroid.checkCollision(missile)) {
-        asteroidHit(asteroid, missile);
+        asteroidHitMissile(asteroid, missile);
       }
     }
     // remove missiles that have reached their lifetime limit
