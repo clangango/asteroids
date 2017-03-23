@@ -190,14 +190,24 @@ void tickGameElements() {
   for(Bullet bullet: bullets) { bullet.draw(); bullet.update(); }
   for(UFO ufo: ufos) {ufo.draw(); ufo.update(); }
 
+  // TODO fix below
   // Initialise target and force for missiles
   PVector force = new PVector(0.1, 0.1);
   PVector target;
-  for(Missile missile: missiles) {missile.update(); missile.draw();
-    missile.applyForce(force);
-    missile.targetNearestAsteroid(asteroids, player.getPosition());
+  PVector playerPosition = player.getPosition();
+  // if (ufos != null) {
+  //     target = new PVector(ufo.getPosition());
+  // }else {
+  //     target = missile.getTarget();
+  //     missile.targetNearestAsteroid(asteroids, playerPosition);
+  // }
+  for(Missile missile: missiles) {
     target = missile.getTarget();
-    missile.homing(target); }
+    missile.targetNearestAsteroid(asteroids, playerPosition);
+    missile.homing(target);
+    missile.update(); missile.draw();
+    missile.applyForce(force);
+    }
   }
 
 
