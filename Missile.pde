@@ -8,7 +8,7 @@ class Missile extends GameObject {
   final int FLIGHTTIME = 1600;
   PVector target;
   int startTime;
-  boolean ufoExists;
+
 
 
   Missile(float shipPositionX, float shipPositionY) {
@@ -63,19 +63,14 @@ class Missile extends GameObject {
   }
 
   // TODO check parameter input and closest target algorithm
-  void targetNearestUFO(UFO ufo){
-      if (UFO != null) {
-        return ufoExists = True;
-    }
-
-  void targetNearestAstroid(ArrayList<Asteroid> asteroids, PVector playerPosition) {
+  void targetNearestAsteroid(ArrayList<Asteroid> asteroids, PVector playerPosition) {
       float nearestTarget;
-      for (int i = asteroids.size(); i > 0; i--) {
-        nearestTarget = PVector.dist(playerPosition, asteroids.get(i));
-        if (nearestTarget < PVector.dist(playerPosition, asteroids.get(i-1))) {
-          target = asteroids.get(i);
+      for (int i = asteroids.size()-1; i > 0; i--) {
+        nearestTarget = PVector.dist(playerPosition, asteroids.get(i).getPosition());
+        if (nearestTarget < PVector.dist(playerPosition, asteroids.get(i-1).getPosition())) {
+          target = asteroids.get(i).getPosition();
         }else {
-          target = asteroids.get(i-1);
+          target = asteroids.get(i-1).getPosition();
         }
       }
     }
@@ -98,8 +93,6 @@ class Missile extends GameObject {
     return false;
   }
 
-  boolean getUfoExists() {
-    return ufoExists;
-  }
+  // abstract void getTarget();
 
 }

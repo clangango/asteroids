@@ -50,7 +50,7 @@ class Player extends GameObject {
       }
     }
     // Fire a missile
-    if (weapon = 2) {
+    if (weapon == 2) {
         fire();
     }
   }
@@ -95,7 +95,7 @@ class Player extends GameObject {
     switch(weapon) {
       // Fire a missile
       case 2:
-        missiles.add(new Missile(position.x + 15  * sin(radians(angle)), position.y - 15 * cos(radians(angle)), angle));
+        missiles.add(new Missile(player.position.x, player.position.y));
         break;
       // default weapon is the bullet
       default:
