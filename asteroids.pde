@@ -202,8 +202,8 @@ void tickGameElements() {
   //     missile.targetNearestAsteroid(asteroids, playerPosition);
   // }
   for(Missile missile: missiles) {
-    target = missile.getTarget();
     missile.targetNearestAsteroid(asteroids, playerPosition);
+    target = missile.getTarget();
     missile.homing(target);
     missile.update(); missile.draw();
     missile.applyForce(force);
