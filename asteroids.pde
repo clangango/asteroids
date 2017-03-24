@@ -81,6 +81,9 @@ void draw() {
   // check for bullet->UFO collisions
   collisionBulletUfo();
 
+  // check for missile -> asteroid collisions
+  collisionMissileAsteroid();
+
   // check for asteroid->player collisions
   collisionAsteroidPlayer();
 
@@ -112,6 +115,7 @@ void keyReleased() {
   if(keyCode == RIGHT) rightKey = false;
   if(key == ' ') fire = false;
   if(key == 'z' || key == 'Z') player.warp();
+  if(key == '2') weapon = 0;
 }
 
 void displayScore() {
