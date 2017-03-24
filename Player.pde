@@ -10,7 +10,7 @@ class Player extends GameObject {
 
   int lives;
   int timeLastFired;
-  int missileCount;
+  int missileCount = 1;
   PShape pShape;
 
   Player() {
@@ -95,7 +95,10 @@ class Player extends GameObject {
     switch(weapon) {
       // Fire a missile
       case 2:
-        missiles.add(new Missile(player.position.x, player.position.y));
+        if (missiles.size()<missileCount) {
+          missiles.add(new Missile(player.position.x, player.position.y));
+          break;
+        }
         break;
       // default weapon is the bullet
       default:

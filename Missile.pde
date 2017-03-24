@@ -93,6 +93,5 @@ class Missile extends GameObject {
     return false;
   }
 
-  // abstract void getTarget();
 
 }
