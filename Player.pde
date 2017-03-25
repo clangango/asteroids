@@ -13,7 +13,6 @@ class Player extends GameObject {
   PShape shipShape;
   
   int missileCount = 1;
-  PShape pShape;
 
   Player() {
     super(width/2, height/2);     // start player in centre of the screen
@@ -21,7 +20,16 @@ class Player extends GameObject {
     timeLastFired = 0;
     weapon = 1;                   // starting weapon is the bullet
     
-    shipShape = createShipShape();
+    shipShape = createShape();
+    shipShape.beginShape();
+    shipShape.noFill();
+    shipShape.stroke(255);
+    shipShape.vertex(-10, 15);
+    shipShape.vertex(0, -15);
+    shipShape.vertex(10, 15);
+    shipShape.vertex(0, 10);
+    shipShape.endShape(CLOSE);
+    
     missileCount = 1;
   }
 
@@ -115,11 +123,6 @@ class Player extends GameObject {
     lives++;
   }
   
-  boolean checkCollision(GameObject object) {
-    if(position.dist(object.getPosition()) < 5) return true;
-    return false;
-  }
-  
   void explode() {
     
   }
@@ -152,19 +155,5 @@ class Player extends GameObject {
 
     // set the record of time last fired back to 0
     timeLastFired = 0;
-  }
-  
-  PShape createShipShape() {
-    shipShape = createShape();
-    shipShape.beginShape();
-    shipShape.noFill();
-    shipShape.stroke(255);
-    shipShape.vertex(-10, 15);
-    shipShape.vertex(0, -15);
-    shipShape.vertex(10, 15);
-    shipShape.vertex(0, 10);
-    shipShape.endShape(CLOSE);
-    
-    return shipShape;
   }
 }

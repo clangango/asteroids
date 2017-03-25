@@ -112,10 +112,7 @@ void keyPressed() {
   if(key == '1') weapon = 1;
   
   // pause for the game
-  if(key == 'p' || key == 'P') {
-    if(looping) noLoop();
-    else loop();
-  }
+  if(key == 'p' || key == 'P') pauseGame();
   if(key == '2') weapon = 2;
 }
 
@@ -240,7 +237,7 @@ void collisionBulletAsteroid() {
 void collisionUFOBulletPlayer() {
   for(int i =  ufoBullets.size(); i > 0; i--) {
     Bullet bullet = (Bullet)ufoBullets.get(i-1);
-    if(player.checkCollision(bullet)) {
+    if(player.checkCollision(bullet, 5)) {
       player.loseLife();
       ufoBullets.remove(bullet);
     }
@@ -306,4 +303,14 @@ void collisionMissileAsteroid() {
 void addScore(int amount) {
   if((score + amount) / 10000 != score / 10000) player.addLife();
   score += amount;
+}
+
+void pauseGame() {
+  if(looping) {
+    textAlign(CENTER);
+    text("PAUSED", width/2, height/2);
+    text("Press P to continue", width/2, height/2 + 50);
+    noLoop();
+  }
+  else loop();
 }

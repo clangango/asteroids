@@ -4,7 +4,9 @@ class Asteroid extends GameObject {
   int size;
   float scale;
   
-  PShape aShape;
+  PShape largeShape;
+  PShape mediumShape;
+  PShape smallShape;
 
   Asteroid(float x, float y, int size) {
     super(x, y);
@@ -15,36 +17,71 @@ class Asteroid extends GameObject {
     
     // set the radius for collision detection **** FIX THIS ****
     // set the scale for the size to draw     **** FIX THIS - ADD MORE SHAPES ****
-    if(size == 3) { radius = 40; scale = 1.0; }
-    if(size == 2) { radius = 20; scale = 0.5; }
-    if(size == 1) { radius = 15; scale = 0.25; }
+    radius = size * 10;
 
     // create the large asteroid shape
-    aShape = createShape();
-    aShape.beginShape();
-    aShape.noFill();
-    aShape.stroke(255);
-    aShape.vertex(0, -30);
-    aShape.vertex(25,-10);
-    aShape.vertex(27, 5);
-    aShape.vertex(20, 30);
-    aShape.vertex(-5, 30);
-    aShape.vertex(-10, 20);
-    aShape.vertex(-25, 25);
-    aShape.vertex(-30, 5);
-    aShape.vertex(-30, 0);
-    aShape.vertex(-20, -10);
-    aShape.vertex(-25, -25);
-    aShape.endShape(CLOSE);
+    largeShape = createShape();
+    largeShape.beginShape();
+    largeShape.noFill();
+    largeShape.stroke(255);
+    largeShape.vertex(-10, -30);
+    largeShape.vertex(14, -30);
+    largeShape.vertex(30, -10);
+    largeShape.vertex(30, 10);
+    largeShape.vertex(16, 30);
+    largeShape.vertex(0, 30);
+    largeShape.vertex(0, 6);
+    largeShape.vertex(-16, 26);
+    largeShape.vertex(-30, 8);
+    largeShape.vertex(-16, 0);
+    largeShape.vertex(-30, -8);
+    largeShape.endShape(CLOSE);
+    
+    // create the medium asteroid shape
+    mediumShape = createShape();
+    mediumShape.beginShape();
+    mediumShape.noFill();
+    mediumShape.stroke(255);
+    mediumShape.vertex(-7, -15);
+    mediumShape.vertex(4, -15);
+    mediumShape.vertex(15, -6);
+    mediumShape.vertex(4, 0);
+    mediumShape.vertex(15, 6);
+    mediumShape.vertex(7, 15);
+    mediumShape.vertex(3, 8);
+    mediumShape.vertex(-6, 14);
+    mediumShape.vertex(-15, 5);
+    mediumShape.vertex(-15, -8);
+    mediumShape.vertex(-4, -8);
+    mediumShape.endShape(CLOSE);
+    
+    // create the medium asteroid shape
+    smallShape = createShape();
+    smallShape.beginShape();
+    smallShape.noFill();
+    smallShape.stroke(255);
+    smallShape.vertex(-4, -10);
+    smallShape.vertex(4, -10);
+    smallShape.vertex(10, -3);
+    smallShape.vertex(8, -1);
+    smallShape.vertex(10, 1);
+    smallShape.vertex(4, 10);
+    smallShape.vertex(0, 10);
+    smallShape.vertex(0, 1);
+    smallShape.vertex(-5, 10);
+    smallShape.vertex(-10, 2);
+    smallShape.vertex(-5, 1);
+    smallShape.vertex(-10, -4);
+    smallShape.endShape(CLOSE);
   }
   
   void draw() {
     pushMatrix();
     translate(position.x, position.y);
     rotate(radians(angle));
-    scale(scale);
-    strokeWeight(1.0/scale);
-    shape(aShape, 0, 0);
+    if(size == 3) shape(largeShape, 0, 0);
+    if(size == 2) shape(mediumShape, 0, 0);
+    if(size == 1) shape(smallShape, 0, 0);
     popMatrix();
   }
   
@@ -57,7 +94,6 @@ class Asteroid extends GameObject {
   }
   
   boolean checkCollision(GameObject object) {
-    if(position.dist(object.getPosition()) < radius) return true;
-    return false;
+    return super.checkCollision(object, radius);
   }
 }

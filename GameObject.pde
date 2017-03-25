@@ -25,4 +25,9 @@ abstract class GameObject {
   PVector getPosition() {
     return position;
   }
+  
+  boolean checkCollision(GameObject object, float collisionDistance) {
+    if(position.dist(object.getPosition()) <= collisionDistance) return true;
+    return false;
+  }
 }
