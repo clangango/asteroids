@@ -110,10 +110,10 @@ void keyPressed() {
   if(keyCode == RIGHT) rightKey = true;
   if(key == ' ') fire = true;
   if(key == '1') weapon = 1;
+  if(key == '2') weapon = 2;
   
   // pause for the game
   if(key == 'p' || key == 'P') pauseGame();
-  if(key == '2') weapon = 2;
 }
 
 void keyReleased() {

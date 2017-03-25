@@ -42,6 +42,7 @@ class Asteroid extends GameObject {
     mediumShape.beginShape();
     mediumShape.noFill();
     mediumShape.stroke(255);
+    mediumShape.strokeWeight(1);
     mediumShape.vertex(-7, -15);
     mediumShape.vertex(4, -15);
     mediumShape.vertex(15, -6);
@@ -60,6 +61,7 @@ class Asteroid extends GameObject {
     smallShape.beginShape();
     smallShape.noFill();
     smallShape.stroke(255);
+    smallShape.strokeWeight(1);
     smallShape.vertex(-4, -10);
     smallShape.vertex(4, -10);
     smallShape.vertex(10, -3);
