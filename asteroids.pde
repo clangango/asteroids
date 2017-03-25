@@ -25,11 +25,13 @@ int score = 0;                         // Current game score
 
 Player player;
 Level level;
+PVector missileTarget;
 
 ArrayList<Bullet> bullets;             // Arraylist to track bullets fired by the player
 ArrayList<Asteroid> asteroids;         // Arraylist to track current asteroids
 ArrayList<Bullet> ufoBullets;          // Arraylist to track UFOs shooting at the player
 UFO ufo;
+ArrayList<Missile> missiles;
 
 // Sounds
 SoundFile thrustSound;
@@ -40,20 +42,21 @@ SoundFile ufoSound;
 PFont font;
 
 void setup() {
-  
+
   size(1000, 800);
-  
+
   player = new Player();
   bullets = new ArrayList<Bullet>();
   asteroids = new ArrayList<Asteroid>();
   ufoBullets = new ArrayList<Bullet>();
   ufo = null;
-  
+  missiles = new ArrayList<Missile>();
+
   // prior to the game starting, the level does not exist. Set to 0
-  level = new Level(0, player);                              
-  
+  level = new Level(0, player);
+
   font = createFont("Hyperspace.otf", 32);
-  
+
   // set sounds and sampling rate. Game FPS = 60, so the sound plays too high pitch if not slowed down
   thrustSound = new SoundFile(this, "thrust.wav");
   fireSound = new SoundFile(this, "fire.wav");
@@ -66,7 +69,7 @@ void setup() {
 void draw() {
   // clear the canvas each loop
   background(0);
-  
+
   // check if UFO appears
   if(ufo == null && random(1) <= UFO.UFO_CHANCE) { addUfo(); }
   
@@ -75,13 +78,16 @@ void draw() {
   
   // check for bullet->asteroid collisions
   collisionBulletAsteroid();
-  
+
   // check for bullet->UFO collisions
   collisionBulletUfo();
-  
+
+  // check for missile -> asteroid collisions
+  collisionMissileAsteroid();
+
   // check for asteroid->player collisions
   collisionAsteroidPlayer();
-  
+
   // check for UFO->player collisions
   collisionUfoPlayer();
   
@@ -90,10 +96,10 @@ void draw() {
   
   // check if UFO disappears
   checkUfoOffScreen();
-  
+
   displayScore();
   displayPlayerLives();
-  
+
   checkGameOver();
   checkLevelOver();
 }
@@ -110,6 +116,7 @@ void keyPressed() {
     if(looping) noLoop();
     else loop();
   }
+  if(key == '2') weapon = 2;
 }
 
 void keyReleased() {
@@ -118,6 +125,7 @@ void keyReleased() {
   if(keyCode == RIGHT) rightKey = false;
   if(key == ' ') fire = false;
   if(key == 'z' || key == 'Z') player.warp();
+  if(key == '2') weapon = 0;
 }
 
 void displayScore() {
@@ -135,7 +143,7 @@ void displayPlayerLives() {
     line(-10, 15, 0, -15);
     line(0, -15, 10, 15);
     line(10, 15, 0, 10);
-    line(0, 10, -10, 15); 
+    line(0, 10, -10, 15);
     popMatrix();
   }
 }
@@ -164,7 +172,7 @@ void checkGameOver() {
 
 void addUfo() {
   float startX = 1;  // default to start on the left side of the canvas
-  float startY = random(150, height - 150);    
+  float startY = random(150, height - 150);
   if(random(1) >= 0.5) startX = width - 1;  // if should start on the right, set startX to the right side
   ufo = new UFO(startX, startY);
 }
@@ -177,14 +185,40 @@ void asteroidHit(Asteroid asteroid, Bullet bullet) {
   asteroids.remove(asteroid);
 }
 
+void asteroidHitMissile(Asteroid asteroid, Missile missile) {
+  // collision occured. Add score, split the asteroid and remove the missile and old asteroid
+  addScore(asteroid.getSize());
+  breakAsteroid(asteroid.getSize(), asteroid.getPosition());
+  missiles.remove(missile);
+  asteroids.remove(asteroid);
+}
+
 void tickGameObjects() {
-  player.draw(); 
+  player.draw();
   player.update();
   for(Asteroid asteroid: asteroids) { asteroid.draw(); asteroid.update(); }
   for(Bullet bullet: bullets) { bullet.draw(); bullet.update(); }
   if(ufo != null) {ufo.draw(); ufo.update(); }
-  for(Bullet bullet: ufoBullets) { bullet.draw(); bullet.update(); }
-}
+
+  // TODO fix below
+  // Initialise target and force for missiles
+  PVector force = new PVector(0.1, 0.1);
+  PVector target;
+  PVector playerPosition = player.getPosition();
+  // if (ufos != null) {
+  //     target = new PVector(ufo.getPosition());
+  // }else {
+  //     target = missile.getTarget();
+  //     missile.targetNearestAsteroid(asteroids, playerPosition);
+  // }
+  for(Missile missile: missiles) {
+    missile.targetNearestAsteroid(asteroids, playerPosition);
+    target = missile.getTarget();
+    missile.homing(target);
+    missile.update(); missile.draw();
+    missile.applyForce(force);
+    }
+  }
 
 void collisionBulletAsteroid() {
   // bullet->asteroid collisions
@@ -238,7 +272,7 @@ void collisionBulletUfo() {
     for(int i = bullets.size(); i > 0; i--) {
       Bullet bullet = (Bullet)bullets.get(i-1);
       if(ufo.checkCollision(bullet)) {
-        addScore(ufoScores[0]);
+        score += ufoScores[0];
         ufo = null;
         ufoSound.stop();
         bullets.remove(bullet);
@@ -249,9 +283,22 @@ void collisionBulletUfo() {
 }
 
 void checkUfoOffScreen() {
-  if(ufo != null && ufo.isOffScreen()) {
-      ufo = null;
-      ufoSound.stop();
+  if(ufo != null && ufo.isOffScreen()) ufo = null;
+}
+
+void collisionMissileAsteroid() {
+  // missile-> asteroid collusion
+  for(int i = missiles.size(); i > 0; i--) {
+    Missile missile = (Missile)missiles.get(i-1);
+    // check for collision between missile and asteroid
+    for(int j = asteroids.size(); j > 0; j--) {
+      Asteroid asteroid = (Asteroid)asteroids.get(j-1);
+      if(asteroid.checkCollision(missile)) {
+        asteroidHitMissile(asteroid, missile);
+      }
+    }
+    // remove missiles that have reached their lifetime limit
+    if(missile.shouldEnd()) missiles.remove(missile);
   }
 }
 
