@@ -10,7 +10,13 @@ class Player extends GameObject {
 
   int lives;
   int timeLastFired;
+<<<<<<< HEAD
   int missileCount;
+=======
+  PShape shipShape;
+  
+  int missileCount = 1;
+>>>>>>> refs/remotes/origin/master
   PShape pShape;
 
   Player() {
@@ -18,17 +24,9 @@ class Player extends GameObject {
     lives = STARTLIVES;
     timeLastFired = 0;
     weapon = 1;                   // starting weapon is the bullet
+    
+    shipShape = createShipShape();
     missileCount = 1;
-
-    pShape = createShape();
-    pShape.beginShape();
-    pShape.noFill();
-    pShape.stroke(255);
-    pShape.vertex(-10, 15);
-    pShape.vertex(0, -15);
-    pShape.vertex(10, 15);
-    pShape.vertex(0, 10);
-    pShape.endShape(CLOSE);
   }
 
   void update() {
@@ -60,8 +58,8 @@ class Player extends GameObject {
     translate(position.x, position.y);
     rotate(radians(angle));
     strokeWeight(1);
-    shape(pShape, 0, 0);;
-
+    shape(shipShape, 0, 0);
+    
     if(upKey) {
       // add a small red flame out the back when applying thrust
       stroke(255,0,0);
@@ -101,8 +99,8 @@ class Player extends GameObject {
         }
         break;
       // default weapon is the bullet
-      default:
-        bullets.add(new Bullet(position.x + 15  * sin(radians(angle)), position.y - 15 * cos(radians(angle)), angle));
+      default:  
+        bullets.add(new Bullet(position.x + 15  * sin(radians(angle)), position.y - 15 * cos(radians(angle)), angle, color(255)));
         fireSound.play();
         break;
     }
@@ -119,6 +117,15 @@ class Player extends GameObject {
 
   void addLife() {
     lives++;
+  }
+  
+  boolean checkCollision(GameObject object) {
+    if(position.dist(object.getPosition()) < 5) return true;
+    return false;
+  }
+  
+  void explode() {
+    
   }
 
   void addMissile() {
@@ -149,5 +156,19 @@ class Player extends GameObject {
 
     // set the record of time last fired back to 0
     timeLastFired = 0;
+  }
+  
+  PShape createShipShape() {
+    shipShape = createShape();
+    shipShape.beginShape();
+    shipShape.noFill();
+    shipShape.stroke(255);
+    shipShape.vertex(-10, 15);
+    shipShape.vertex(0, -15);
+    shipShape.vertex(10, 15);
+    shipShape.vertex(0, 10);
+    shipShape.endShape(CLOSE);
+    
+    return shipShape;
   }
 }

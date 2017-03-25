@@ -2,20 +2,21 @@ class Bullet extends GameObject {
   
   final float SPEED = 10.0;          // how fast the x and y velocity vectors should change
   final int FLIGHTTIME = 800;        // millisecond flight time for bullets before they expire
+  color bulletColor;                 // color of the bullet in RGB format
 
-  int startTime;
+  int startTime;  
   
-  
-  Bullet(float x, float y, float angle) {
+  Bullet(float x, float y, float angle, color col) {
     super(x, y);
     velocity.x = SPEED * sin(radians(angle));
     velocity.y = -SPEED * cos(radians(angle));
+    bulletColor = col;
     startTime = millis();
   }
   
   void draw() {
     pushMatrix();
-    stroke(255);
+    stroke(bulletColor);
     strokeWeight(2);
     translate(position.x, position.y);
     point(0, 0);
