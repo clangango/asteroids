@@ -127,7 +127,7 @@ void displayScore() {
   textFont(font);
   textAlign(LEFT);
   text(score, 30, 50);
-  cp5.addSlider("score").setPosition(30, 60).setRange(0, 10000).setColorActive(0);
+  cp5.addSlider("score").setPosition(30, 60).setRange(0, 10000);
 
 }
 
