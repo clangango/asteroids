@@ -1,3 +1,4 @@
+
 /**
  * COSC101 Software Development Studio
  * Assignment 1
@@ -9,6 +10,7 @@
 **/
 
 import processing.sound.*;
+import controlP5.*;
 
 final int MAX_UFO = 1;
 final int[] asteroidScores = { 20, 50, 100 };  // array to store points values for asteroids
@@ -25,6 +27,7 @@ int score = 0;                         // Current game score
 
 Player player;
 Level level;
+ControlP5 cp5;
 PVector missileTarget;
 
 ArrayList<Bullet> bullets;             // Arraylist to track bullets fired by the player
@@ -53,6 +56,8 @@ void setup() {
 
   // prior to the game starting, the level does not exist. Set to 0
   level = new Level(0, player);
+
+  cp5 = new ControlP5(this);
 
   font = createFont("Hyperspace.otf", 32);
 
@@ -122,6 +127,8 @@ void displayScore() {
   textFont(font);
   textAlign(LEFT);
   text(score, 30, 50);
+  cp5.addSlider("score").setPosition(30, 60).setRange(0, 10000).setColorActive(0);
+
 }
 
 void displayPlayerLives() {

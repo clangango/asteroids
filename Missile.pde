@@ -17,7 +17,7 @@ class Missile extends GameObject {
     velocity = new PVector(0, 0);
     max_speed = 5;
     max_force = 0.5;
-    size = 5;
+    size = 2;
     startTime = millis();
   }
 
@@ -55,15 +55,16 @@ class Missile extends GameObject {
     translate(position.x, position.y);
     rotate(theta);
     beginShape();
-    vertex(0, -size*5);
-    vertex(-size, size*5);
-    vertex(size, size*5);
+    vertex(0, -size*3);
+    vertex(-size, size*3);
+    vertex(size, size*3);
     endShape(CLOSE);
     popMatrix();
   }
 
-  // TODO check parameter input and closest target algorithm
   void targetNearestAsteroid(ArrayList<Asteroid> asteroids, PVector playerPosition) {
+      float range = 800;
+      range*=range;
       float nearestTarget;
       for (int i = asteroids.size()-1; i > 0; i--) {
         nearestTarget = PVector.dist(playerPosition, asteroids.get(i).getPosition());

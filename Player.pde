@@ -10,7 +10,7 @@ class Player extends GameObject {
 
   int lives;
   int timeLastFired;
-  int missileCount = 1;
+  int missileCount;
   PShape pShape;
 
   Player() {
