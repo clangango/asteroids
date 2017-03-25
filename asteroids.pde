@@ -199,6 +199,7 @@ void tickGameObjects() {
   for(Asteroid asteroid: asteroids) { asteroid.draw(); asteroid.update(); }
   for(Bullet bullet: bullets) { bullet.draw(); bullet.update(); }
   if(ufo != null) {ufo.draw(); ufo.update(); }
+  for(Bullet bullet: ufoBullets) { bullet.draw(); bullet.update(); }
 
   // TODO fix below
   // Initialise target and force for missiles

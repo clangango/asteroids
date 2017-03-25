@@ -1,6 +1,6 @@
 class UFO extends GameObject {
   
-  static final float UFO_CHANCE = 0.001;            // chance each loop that a UFO will appear
+  static final float UFO_CHANCE = 0.1;            // chance each loop that a UFO will appear
   final int FIREDELAY = 1000;                                // milliseconds to delay between firing
   float ufoSize;
   
