@@ -20,6 +20,7 @@ boolean upKey;
 boolean fire;
 int weapon;
 boolean paused;
+int page = 0;
 
 int score = 0;                         // Current game score
 
@@ -67,15 +68,45 @@ void setup() {
 }
 
 void draw() {
+    if (page == 0) {
+    startScreen();
+  }else if (page == 1) {
+    startGame();
+  }else if (page == 2) {
+    gameOver();
+    // create new objects to restart game
+    level = new Level(0, player);
+    player = new Player();
+    bullets = new ArrayList<Bullet>();
+    asteroids = new ArrayList<Asteroid>();
+    ufoBullets = new ArrayList<Bullet>();
+    ufo = null;
+    missiles = new ArrayList<Missile>();
+  }
+}
+
+void startScreen() {
+  background(0);
+  textAlign(CENTER);
+  textSize(30);
+  text("Please click to start the game",width/2 ,height/2-100);
+  text("Instructions:",width/2 ,height/2-60);
+  text("1. Use the arrow keys to manoeuvre the spaceship",width/2 ,height/2-20);
+  text("2. Use the spacebar key to fire bullets",width/2 ,height/2+20);
+  text("3. Use the number 2 key to fire missiles",width/2 ,height/2+60);
+  text("4. Use the Z key to warp",width/2 ,height/2+100);
+}
+
+void startGame() {
   // clear the canvas each loop
   background(0);
 
   // check if UFO appears
   if(ufo == null && random(1) <= UFO.UFO_CHANCE) { addUfo(); }
-  
+
   // update and draw player, asteroids, bullets and ufos
   tickGameObjects();
-  
+
   // check for bullet->asteroid collisions
   collisionBulletAsteroid();
 
@@ -90,10 +121,10 @@ void draw() {
 
   // check for UFO->player collisions
   collisionUfoPlayer();
-  
+
   // check for UFO Bullet->player collision
   collisionUFOBulletPlayer();
-  
+
   // check if UFO disappears
   checkUfoOffScreen();
 
@@ -104,6 +135,21 @@ void draw() {
   checkLevelOver();
 }
 
+void gameOver() {
+  textAlign(CENTER);
+  text("Game Over!",width/2 ,height/2);
+  text("Please click to restart game",width/2,height/2+40);
+}
+
+void mouseClicked() {
+  if (page == 0) {
+    page = 1;
+  }
+  if (page == 2) {
+    page = 0;
+  }
+}
+
 void keyPressed() {
   if(keyCode == UP) upKey = true;
   if(keyCode == LEFT) leftKey = true;
@@ -111,7 +157,7 @@ void keyPressed() {
   if(key == ' ') fire = true;
   if(key == '1') weapon = 1;
   if(key == '2') weapon = 2;
-  
+
   // pause for the game
   if(key == 'p' || key == 'P') pauseGame();
 }
@@ -152,7 +198,7 @@ void checkLevelOver() {
   }
 }
 
-void breakAsteroid(int size, PVector position) {  
+void breakAsteroid(int size, PVector position) {
   if(size - 1 > 0) {
     asteroids.add(new Asteroid(position.x, position.y, size - 1));
     asteroids.add(new Asteroid(position.x, position.y, size - 1));
@@ -161,9 +207,10 @@ void breakAsteroid(int size, PVector position) {
 
 void checkGameOver() {
   if(player.getLives() <= 0) {
-    textAlign(CENTER);
-    text("GAME OVER", width/2, height/2);
-    noLoop();
+    page = 2;
+    // textAlign(CENTER);
+    // text("GAME OVER", width/2, height/2);
+    // noLoop();
   }
 }
 
