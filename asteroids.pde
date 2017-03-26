@@ -74,17 +74,26 @@ void draw() {
     startGame();
   }else if (page == 2) {
     gameOver();
+    // create new objects to restart game
+    level = new Level(0, player);
+    player = new Player();
+    bullets = new ArrayList<Bullet>();
+    asteroids = new ArrayList<Asteroid>();
+    ufoBullets = new ArrayList<Bullet>();
+    ufo = null;
+    missiles = new ArrayList<Missile>();
   }
 }
 
 void startScreen() {
   background(0);
   textAlign(CENTER);
-  text("Please click to start the game",width/2 ,height/2);
-  text("Instructions:",width/2 ,height/2+20);
-  text("1. Use the arrow keys to manoeuvre the spaceship",width/2 ,height/2+40);
-  text("2. Use the spacebar key to fire bullets",width/2 ,height/2+60);
-  text("3. Use the number 2 key to fire missiles",width/2 ,height/2+80);
+  textSize(30);
+  text("Please click to start the game",width/2 ,height/2-100);
+  text("Instructions:",width/2 ,height/2-60);
+  text("1. Use the arrow keys to manoeuvre the spaceship",width/2 ,height/2-20);
+  text("2. Use the spacebar key to fire bullets",width/2 ,height/2+20);
+  text("3. Use the number 2 key to fire missiles",width/2 ,height/2+60);
   text("4. Use the Z key to warp",width/2 ,height/2+100);
 }
 
@@ -129,7 +138,7 @@ void startGame() {
 void gameOver() {
   textAlign(CENTER);
   text("Game Over!",width/2 ,height/2);
-  text("Please click to restart game",width/2,height/2-20);
+  text("Please click to restart game",width/2,height/2+40);
 }
 
 void mouseClicked() {
@@ -198,9 +207,10 @@ void breakAsteroid(int size, PVector position) {
 
 void checkGameOver() {
   if(player.getLives() <= 0) {
-    textAlign(CENTER);
-    text("GAME OVER", width/2, height/2);
-    noLoop();
+    page = 2;
+    // textAlign(CENTER);
+    // text("GAME OVER", width/2, height/2);
+    // noLoop();
   }
 }
 
