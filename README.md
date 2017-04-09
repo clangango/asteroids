@@ -6,7 +6,7 @@
 ## Group Members
 Peter Stacey	(StudentID: 220170617).
 
-Tim Periera.
+Tim Periera   (StudentID: 220145627).
 
 ## Description
 An implementation of the classic arcade game, Asteroids, using the Processing 3 platform.
