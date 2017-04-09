@@ -3,14 +3,14 @@
 ## Assigment 1
 ## Group 20
 
-##Group Members
+## Group Members
 Peter Stacey	(StudentID: 220170617)
 Tim Periera
 
-##Description
+## Description
 An implementation of the classic arcade game, Asteroids, using the Processing 3 platform.
 
-##Attributions
+## Attributions
 
 ‘Asteroids.wav’ by GGEffex available at https://freesound.org/people/CGEffex/sounds/96693/ under a Creative Commons Attribution 3.0. Full terms at https://creativecommons.org/licenses/by/3.0/.
 
