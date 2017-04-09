@@ -1,159 +1,171 @@
-/**
- *
-**/
 class Player extends GameObject {
-
-  final float THRUST = 0.2;       // constant modifier of acceleration
-  final float DECELERATE = 0.985; // amount to reduce velocity when not accelerating
-  final int FIREDELAY = 250;      // milliseconds to delay between firing
-  final int STARTLIVES = 3;
-
-  int lives;
-  int timeLastFired;
-  PShape shipShape;
   
-  int missileCount = 1;
-
+  String weapon;
+  String currentState; // Whether the player is "active", "exploding" or "dead". Dead is end of the game
+  
+  PShape ship;
+  
+  int lives;
+  int missiles;       // Current remaining missiles available
+  int explodeTime;    // Time the player is hit and starts to explode
+  int timeLastFired;  // Used to determine if the player is currently allowed to fire
+  
   Player() {
-    super(width/2, height/2);     // start player in centre of the screen
-    lives = STARTLIVES;
+    super(HALF_WIDTH, HALF_HEIGHT, PLAYER_ANGLE, PLAYER_SPEED, PLAYER_MAX_SPEED, PLAYER_SIZE);
+    
     timeLastFired = 0;
-    weapon = 1;                   // starting weapon is the bullet
+    weapon = "bullet";  // Default weapon is bullets fired with the spacebar
+    currentState = "active";
+    lives = PLAYER_START_LIVES;
+    missiles = PLAYER_START_MISSILES;
     
-    shipShape = createShape();
-    shipShape.beginShape();
-    shipShape.noFill();
-    shipShape.stroke(255);
-    shipShape.vertex(-10, 15);
-    shipShape.vertex(0, -15);
-    shipShape.vertex(10, 15);
-    shipShape.vertex(0, 10);
-    shipShape.endShape(CLOSE);
-    
-    missileCount = 1;
-  }
-
-  void update() {
-    super.update();
-
-    if(leftKey) rotateLeft();
-    if(rightKey) rotateRight();
-    if(upKey) {
-      thrust();
-    } else {
-      acceleration.x = 0;
-      acceleration.y = 0;
-      velocity.mult(DECELERATE);  // if not applying thrust, slow down a little bit each loop
+    ship = createShape();
+    ship.beginShape();
+    ship.noFill();
+    ship.strokeWeight(STROKE_WEIGHT);
+    ship.stroke(WHITE);
+    for(float[] points: PLAYER_POINTS) {
+      ship.vertex(points[0], points[1]);
     }
-    if(fire) {
-      if(millis() - timeLastFired > FIREDELAY) {
-        fire();
-        timeLastFired = millis();
+    ship.endShape(CLOSE);
+  }
+  
+  void update() {
+    if(currentState == "active") {  // If active, update movements and ability to fire
+      super.update();
+      
+      if(leftKey) rotateLeft();
+      if(rightKey) rotateRight();
+      if(upKey) { 
+        thrust();
+      } else {
+        acceleration.x = 0.0;
+        acceleration.y = 0.0;
+        velocity.mult(PLAYER_DECELERATE);
+      }
+      if(fire || weapon == "missile") {
+        if(millis() - timeLastFired > PLAYER_FIRE_DELAY) {
+          fire();
+          timeLastFired = millis();
+        }
+      }
+    } else if(currentState == "exploding") {  // Otherwise explode the player
+      if(millis() - explodeTime > EXPLOSION_FLIGHT_TIME) {
+        this.reset();
       }
     }
-    // Fire a missile
-    if (weapon == 2) {
-        fire();
-    }
   }
-
+  
   void draw() {
-    pushMatrix();
-    translate(position.x, position.y);
-    rotate(radians(angle));
-    strokeWeight(1);
-    shape(shipShape, 0, 0);
-    
-    if(upKey) {
+    if(currentState == "active") { // Only draw the active player. Exploding player is drawn as explosion
+      pushMatrix();
+      translate(position.x, position.y);
+      rotate(radians(angle));
+      shape(ship, 0, 0);
       // add a small red flame out the back when applying thrust
-      stroke(255,0,0);
-      noFill();
-      triangle(-2, 15, 0, 25, 2, 15);
+      if(upKey) {
+        stroke(RED);
+        noFill();
+        triangle(-2.0, 15.0, 0.0, 25.0, 2.0, 15.0);
+      }
+      popMatrix();
     }
-    popMatrix();
   }
-
+  
   void thrust() {
-    acceleration.x = THRUST * sin(radians(angle));
-    acceleration.y = -THRUST * cos(radians(angle));
+    acceleration.x = this.speed * sin(radians(angle));
+    acceleration.y = -this.speed * cos(radians(angle));
     thrustSound.play();
   }
 
   void rotateLeft() {
-    angle -= 10;
+    angle -= PLAYER_ROTATION;
   }
 
   void rotateRight() {
-    angle += 10;
+    angle += PLAYER_ROTATION;
   }
-
-  // pick a random location on the screen and move the player
+  
+  /**
+   * Provides the player the ability to ascape a tight situation by moving
+   * the ship to a random location on screen.
+   *
+   * Future development: ensure random location is not occupied.
+  **/
   void warp() {
-    position.x = random(0, width);
-    position.y = random(0, height);
+    position.x = random(ORIGIN_X, width);
+    position.y = random(ORIGIN_Y, height);
   }
-
+  
+  void setWeapon(String weapon) {
+    this.weapon = weapon;
+  }
+  
   void fire() {
     switch(weapon) {
-      // Fire a missile
-      case 2:
-        if (missiles.size()<missileCount) {
-          missiles.add(new Missile(player.position.x, player.position.y));
+      case "bullet":
+        // Fire bullets in the current direction the player is heading and
+        // fire from the tip of the ship
+        game.bullets.add(new Bullet(position.x + size  * sin(radians(angle)), 
+                                    position.y - size * cos(radians(angle)), 
+                                    angle, color(WHITE)));
+        break;
+      case "missile":
+        if (game.missile == null && missiles > 0) {
+          game.missile = new Missile(position.x, position.y);
+          missiles--;
+          weapon = "bullet";
           break;
         }
         break;
       // default weapon is the bullet
       default:  
-        bullets.add(new Bullet(position.x + 15  * sin(radians(angle)), position.y - 15 * cos(radians(angle)), angle, color(255)));
-        fireSound.play();
+        game.bullets.add(new Bullet(position.x + size  * sin(radians(angle)), 
+                                    position.y - size * cos(radians(angle)), 
+                                    angle, color(WHITE)));
         break;
     }
-
-  }
-
-  int getLives() {
-    return lives;
-  }
-
-  void loseLife() {
-    lives--;
-  }
-
-  void addLife() {
-    lives++;
   }
   
   void explode() {
-    
+    mediumExplosionSound.play();
+    game.explosions.add(new Explosion(position, color(WHITE)));
+    mediumExplosionSound.play();
+    currentState = "exploding";
+    explodeTime = millis();
   }
-
-  void addMissile() {
-    missileCount++;
+  
+  String getState() { return currentState; }
+  
+  void setState(String state) {
+    currentState = state;
   }
+  
+  boolean isExploding() { return currentState == "exploding"; }
 
-  void removeMissile() {
-    missileCount--;
+  int getLives() { return lives; }
+  
+  int getMissiles() { return missiles; }
+  
+  void setMissiles(int missiles) { this.missiles = missiles; }
+
+  void loseLife() { lives--; }
+
+  void addLife() {
+    lives++;
+    extraLifeSound.play();
   }
-
-  // set the player ship values back to the starting position
-  // called at the start of each level to rest the player for the next level
+  
   void reset() {
-    // return position to centre of the screen
-    position.x = width/2;
-    position.y = height/2;
-
-    // set angle back to 0
+    // Return the player to the centre of the screen and "active"
+    position.x = HALF_WIDTH;
+    position.y = HALF_HEIGHT;
     angle = 0;
-
-    // set velocity to 0
     velocity.x = 0;
     velocity.y = 0;
-
-    // set acceleration to 0
     acceleration.x = 0;
     acceleration.y = 0;
-
-    // set the record of time last fired back to 0
     timeLastFired = 0;
+    currentState = "active";
   }
 }

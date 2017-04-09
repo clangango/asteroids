@@ -1,101 +1,60 @@
 class Asteroid extends GameObject {
   
-  int radius;
-  int size;
-  float scale;
+  int points;
   
-  PShape largeShape;
-  PShape mediumShape;
-  PShape smallShape;
+  PShape asteroidShape;
 
-  Asteroid(float x, float y, int size) {
-    super(x, y);
+  Asteroid(float x, float y, float size) {
+    super(x, y, ASTEROID_ANGLE, ASTEROID_SPEED, ASTEROID_MAX_SPEED, size);
+    // Change the angle of movement to a random value 0 - 360 degrees
     angle = random(360);
-    this.size = size;
-    velocity.x = (1 + 1/size + level.getLevel() * 0.2) * sin(radians(angle));
-    velocity.y = (1 + 1/size + level.getLevel() * 0.2) * -cos(radians(angle));
+    // Set velocity to change based on asteroid size and game level. 
+    // Asteroids will move faster as they get smaller and faster as the
+    // player advances more levels.
+    velocity.x = (ASTEROID_BASE_VELOCITY + 1.0/(size/10) + game.level.getLevel() * this.speed) * sin(radians(angle));
+    velocity.y = (ASTEROID_BASE_VELOCITY + 1.0/(size/10) + game.level.getLevel() * this.speed) * -cos(radians(angle));
     
-    // set the radius for collision detection **** FIX THIS ****
-    // set the scale for the size to draw     **** FIX THIS - ADD MORE SHAPES ****
-    radius = size * 10;
-
-    // create the large asteroid shape
-    largeShape = createShape();
-    largeShape.beginShape();
-    largeShape.noFill();
-    largeShape.stroke(255);
-    largeShape.vertex(-10, -30);
-    largeShape.vertex(14, -30);
-    largeShape.vertex(30, -10);
-    largeShape.vertex(30, 10);
-    largeShape.vertex(16, 30);
-    largeShape.vertex(0, 30);
-    largeShape.vertex(0, 6);
-    largeShape.vertex(-16, 26);
-    largeShape.vertex(-30, 8);
-    largeShape.vertex(-16, 0);
-    largeShape.vertex(-30, -8);
-    largeShape.endShape(CLOSE);
+    // get the correct set of vertices based on the size of the asteroid
+    float[][] vertices = getVertices(size);
     
-    // create the medium asteroid shape
-    mediumShape = createShape();
-    mediumShape.beginShape();
-    mediumShape.noFill();
-    mediumShape.stroke(255);
-    mediumShape.strokeWeight(1);
-    mediumShape.vertex(-7, -15);
-    mediumShape.vertex(4, -15);
-    mediumShape.vertex(15, -6);
-    mediumShape.vertex(4, 0);
-    mediumShape.vertex(15, 6);
-    mediumShape.vertex(7, 15);
-    mediumShape.vertex(3, 8);
-    mediumShape.vertex(-6, 14);
-    mediumShape.vertex(-15, 5);
-    mediumShape.vertex(-15, -8);
-    mediumShape.vertex(-4, -8);
-    mediumShape.endShape(CLOSE);
+    asteroidShape = createShape();
+    asteroidShape.beginShape();
+    asteroidShape.noFill();
+    asteroidShape.stroke(ASTEROID_COLOR);
+    asteroidShape.strokeWeight(STROKE_WEIGHT);
+    for(float[] points: vertices) {
+      asteroidShape.vertex(points[0], points[1]);
+    }
+    asteroidShape.endShape(CLOSE);
     
-    // create the medium asteroid shape
-    smallShape = createShape();
-    smallShape.beginShape();
-    smallShape.noFill();
-    smallShape.stroke(255);
-    smallShape.strokeWeight(1);
-    smallShape.vertex(-4, -10);
-    smallShape.vertex(4, -10);
-    smallShape.vertex(10, -3);
-    smallShape.vertex(8, -1);
-    smallShape.vertex(10, 1);
-    smallShape.vertex(4, 10);
-    smallShape.vertex(0, 10);
-    smallShape.vertex(0, 1);
-    smallShape.vertex(-5, 10);
-    smallShape.vertex(-10, 2);
-    smallShape.vertex(-5, 1);
-    smallShape.vertex(-10, -4);
-    smallShape.endShape(CLOSE);
+    if(size == ASTEROID_LG_SIZE) { points = ASTEROID_LG_POINTS; }
+    if(size == ASTEROID_MD_SIZE) { points = ASTEROID_MD_POINTS; }
+    if(size == ASTEROID_SM_SIZE) { points = ASTEROID_SM_POINTS; }
   }
   
   void draw() {
     pushMatrix();
     translate(position.x, position.y);
     rotate(radians(angle));
-    if(size == 3) shape(largeShape, 0, 0);
-    if(size == 2) shape(mediumShape, 0, 0);
-    if(size == 1) shape(smallShape, 0, 0);
+    shape(asteroidShape, ORIGIN_X, ORIGIN_Y);
     popMatrix();
   }
   
-  int getSize() {
-    return size;
+  int getPoints() { return points; }
+  
+  float[][] getVertices(float size) {
+    // return the correct array of vertices for the size of the asteroid
+    if(size == ASTEROID_SM_SIZE) { return ASTEROID_SM; }
+    if(size == ASTEROID_MD_SIZE) { return ASTEROID_MD; }
+    return ASTEROID_LG;
   }
   
-  int getRadius() {
-    return radius;
-  }
-  
-  boolean checkCollision(GameObject object) {
-    return super.checkCollision(object, radius);
+  void breakAsteroid(int size, PVector position) {
+    // If the asteroid is not the small size, break it into two smaller asteroids
+    // If the asteroid is the smallest asteroid, do nothing further
+    if(size - 10 > 0) {
+      game.asteroids.add(new Asteroid(position.x, position.y, (size - 10)));
+      game.asteroids.add(new Asteroid(position.x, position.y, (size - 10)));
+    }
   }
 }

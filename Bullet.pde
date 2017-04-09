@@ -1,23 +1,22 @@
 class Bullet extends GameObject {
   
-  final float SPEED = 10.0;          // how fast the x and y velocity vectors should change
-  final int FLIGHTTIME = 800;        // millisecond flight time for bullets before they expire
-  color bulletColor;                 // color of the bullet in RGB format
-
-  int startTime;  
+  color bulletColor;
   
-  Bullet(float x, float y, float angle, color col) {
-    super(x, y);
-    velocity.x = SPEED * sin(radians(angle));
-    velocity.y = -SPEED * cos(radians(angle));
-    bulletColor = col;
+  int startTime; // time the bullet is fired. Determines when to remove it based on flight time.
+  
+  Bullet(float x, float y, float angle, color c) {
+    super(x, y, angle, BULLET_SPEED, BULLET_MAX_SPEED, BULLET_SIZE);
+    velocity.x = this.speed * sin(radians(angle));
+    velocity.y = -this.speed * cos(radians(angle));
+    bulletColor = c;
     startTime = millis();
+    fireSound.play();
   }
   
   void draw() {
     pushMatrix();
     stroke(bulletColor);
-    strokeWeight(2);
+    strokeWeight(STROKE_WEIGHT * 2.0); // draw bullets at double weight to make them easy to see
     translate(position.x, position.y);
     point(0, 0);
     popMatrix();
@@ -28,11 +27,10 @@ class Bullet extends GameObject {
   }
   
   int getFlightTime() {
-    return FLIGHTTIME;
+    return BULLET_FLIGHT_TIME;
   }
   
   boolean shouldEnd() {
-    if(millis() - startTime >= FLIGHTTIME) return true;
-    return false;
+    return millis() - startTime >= BULLET_FLIGHT_TIME;
   }
 }

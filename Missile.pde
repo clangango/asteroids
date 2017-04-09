@@ -1,102 +1,92 @@
 class Missile extends GameObject {
-
-  PVector velocity;
-  PVector acceleration;
-  float max_force;
-  float max_speed;
-  float size;
-  final int FLIGHTTIME = 1600;
+  
   PVector target;
+  
+  float max_acceleration; // 
+  
   int startTime;
 
-
-
-  Missile(float shipPositionX, float shipPositionY) {
-    super(shipPositionX, shipPositionY);
-    acceleration = new PVector(0, 0);
-    velocity = new PVector(0, 0);
-    max_speed = 5;
-    max_force = 0.5;
-    size = 2;
+  Missile(float x, float y) {
+    super(x, y, MISSILE_ANGLE, MISSILE_SPEED, MISSILE_MAX_SPEED, MISSILE_SIZE);
+    acceleration.x = MISSILE_ACCELERATION;
+    acceleration.y = MISSILE_ACCELERATION;
+    max_acceleration = MISSILE_MAX_ACCELERATION;
     startTime = millis();
+    missileLaunchSound.play();
   }
-
+  
   void update() {
-    // Acceleration = change in velocity
-    velocity.add(acceleration);
-    velocity.limit(max_speed);
-    // Velocity = change in position
-    position.add(velocity);
-
+    PVector force = new PVector(MISSILE_DIRECTION_CHANGE_FORCE, MISSILE_DIRECTION_CHANGE_FORCE); // force to apply to direction change
+    if(game.ufo != null) {
+      target = game.ufo.getPosition();  // If a UFO is on screen, set it as the target
+    } else {
+      this.targetNearestAsteroid();  // Otherwise, target an asteroid
+    }
+    this.homing(target);  // set new direction to the target
+    this.applyForce(force);  // change direction towards the target
+    super.update();
   }
-
-  void applyForce(PVector force) {
-    // force = mass(1)*acceleration
-    acceleration.add(force);
-  }
-
-  void homing(PVector target) {
-    // desired velocity =  target location - current position
-    PVector desired =  PVector.sub(target,position);
-    desired.normalize();
-    desired.mult(max_speed);
-    // steering force =  desired velocity - current velocity
-    PVector steer = PVector.sub(desired, velocity);
-    steer.limit(max_force);
-    applyForce(steer);
-  }
-
+  
   void draw() {
-    // Allows rotation of the object
     float theta = velocity.heading() + PI/2;
     noFill();
-    stroke(#F50031);
+    stroke(WHITE);
     pushMatrix();
     translate(position.x, position.y);
     rotate(theta);
     beginShape();
-    vertex(0, -size*2);
-    vertex(-size, size*2);
-    vertex(size, size*2);
+    vertex(-5.0, -5.0);
+    vertex(0.0, -15.0);
+    vertex(5.0, -5.0);
+    endShape(CLOSE);
+    quad(-5.0, -5.0, 5.0, -5.0, 2.0, 10.0, -2.0, 10.0);
+    beginShape();
+    stroke(RED);
+    vertex(-2.0, 12.0);
+    vertex(2.0, 12.0);
+    vertex(0.0, 15.0);
     endShape(CLOSE);
     popMatrix();
   }
-
-  void targetNearestAsteroid(ArrayList<Asteroid> asteroids, PVector playerPosition) {
-      float nearestTarget;
-      if (asteroids.size() == 1) {
-        nearestTarget = PVector.dist(playerPosition, asteroids.get(0).getPosition());
-        target = asteroids.get(0).getPosition();
-      }
-      else if (asteroids.size() > 1) {
-        for (int i = asteroids.size()-1; i > 0; i--) {
-          nearestTarget = PVector.dist(playerPosition, asteroids.get(i).getPosition());
-          if (nearestTarget < PVector.dist(playerPosition, asteroids.get(i-1).getPosition())) {
-            target = asteroids.get(i).getPosition();
-          }else {
-            target = asteroids.get(i-1).getPosition();
-          }
+  
+  void applyForce(PVector force) { acceleration.add(force); }
+  
+  // Set the direction towards the current target
+  void homing(PVector target) {
+    PVector desiredDirection = PVector.sub(target, position);
+    desiredDirection.normalize();
+    desiredDirection.mult(max_speed);
+    PVector steer = PVector.sub(desiredDirection, velocity);
+    steer.limit(max_acceleration);
+    applyForce(steer);
+  }
+  
+  // Pick a target among the asteroids
+  void targetNearestAsteroid() {
+    PVector playerPosition = game.player.getPosition();
+    float nearestTarget;
+    if (game.asteroids.size() == 1) {
+      nearestTarget = PVector.dist(playerPosition, game.asteroids.get(0).getPosition());
+      target = game.asteroids.get(0).getPosition();
+    } else if (game.asteroids.size() > 1) {
+      for (int i = game.asteroids.size() - 1; i > 0; i--) {
+        nearestTarget = PVector.dist(playerPosition, game.asteroids.get(i).getPosition());
+        if (nearestTarget < PVector.dist(playerPosition, game.asteroids.get(i - 1).getPosition())) {
+          target = game.asteroids.get(i).getPosition();
+        } else {
+          target = game.asteroids.get(i - 1).getPosition();
         }
       }
     }
-
-
-  PVector getTarget() {
-    return target;
   }
 
-  int getTime() {
-    return startTime;
-  }
+  PVector getTarget() { return target; }
 
-  int getFlightTime() {
-    return FLIGHTTIME;
-  }
+  int getTime() { return startTime; }
+
+  int getFlightTime() { return MISSILE_FLIGHT_TIME; }
 
   boolean shouldEnd() {
-    if(millis() - startTime >= FLIGHTTIME) return true;
-    return false;
+    return millis() - startTime >= MISSILE_FLIGHT_TIME;
   }
-
-
 }

@@ -1,24 +1,32 @@
 class Level {
   
   int level;
-  Player player;
 
-  Level(int level, Player player) {
+  Level(int level) {
     this.level = level;
-    this.player = player;
   }
   
   void start() {
-    
-    // add asteroids n = 2 + 2 * level (level 1 = 4, level 2 = 6, level 3 = 8, etc.)
+    /**
+     * Formula for the number of asteroids is:
+     * 2 asteroids + 2 * level
+     * At level 1: 2 + 2 * 1 = 4
+     * At level 2: 2 + 2 * 2 = 6
+     * At level 3: 2 + 2 * 3 = 8
+     * Starts game with 4 Asteroids and increases by 2 per level
+    **/
     for(int i = 0; i < (2 + level * 2); i++) {
       
       float startX, startY;
       
       // determine of the asteroid should be on the left or right of the canvas
+      // <0.5 = left
+      // >= 0.5 = right
       float leftRight = random(0, 1);
       
-      // determin if the asteroid should be on the top or bottom
+      // determine if the asteroid should be on the top or bottom of the canvas
+      // <0.5 = top
+      // >=0.5 = bottom
       float topBottom = random(0, 1);
       
       // pick x and y values so that asteroids cannot begin the game on top of the ship.
@@ -29,10 +37,10 @@ class Level {
       else { startY = random(height/2 + 200, height);}
       
       // create asteroid at the random position near the edge of the screen
-      asteroids.add(new Asteroid(startX, startY, 3));
+      game.asteroids.add(new Asteroid(startX, startY, ASTEROID_LG_SIZE));
     }
     // reset the player back to start position
-    player.reset();
+    game.player.reset();
   }
   
   int getLevel() {
@@ -43,8 +51,8 @@ class Level {
     this.level = level;
   }
   
-  boolean shouldLevel(ArrayList<Asteroid> asteroids, UFO ufo) {
-    if(asteroids.size() == 0 && ufo == null) return true;
-    return false;
+  boolean shouldEnd() {
+    // End the level if all asteroids are destroyed and no UFO on screen
+    return game.asteroids.size() == 0 && game.ufo == null;
   }
 }
